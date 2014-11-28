@@ -22,6 +22,8 @@
 #  Pin  8 (Vcc2)      +                        +Connect to +9 V from battery |
 #---------------------+------------------------+-----------------------------+
 # Also connect -ve of battery to ground (GND).
+# See http://youtu.be/Q7DNpWvGw90 and
+# http://youtu.be/mbdJMM7fMu0 for demo.
 
 import RPi.GPIO as GPIO
 import time

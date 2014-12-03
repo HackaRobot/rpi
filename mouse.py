@@ -10,7 +10,12 @@ class App:
             return
         tstamp = time.time()
         delta = tstamp - self.lastevt
-        if delta > 0.30:
+        xdelta = 100
+        if self.lastpos:
+            xdelta = abs(event.x - self.lastpos)
+        else:
+            self.lastpos = event.x
+        if delta > 0.30 and xdelta > 20:
             self.lastevt = tstamp
             delta2 = tstamp - self.starttime
             x = event.x - 100
@@ -19,6 +24,7 @@ class App:
             if x > 500:
                 x = 500
             print x, "    ", round(delta2, 3)
+            self.lastpos = event.x
 
     def tick(self):
         self.countdown -= 1
@@ -34,9 +40,9 @@ class App:
 
         self.lastevt = time.time()
         self.starttime = time.time()
-        self.started = False
         self.countdown = 5
         self.state = "INIT"
+        self.lastpos = None
 
         frame = Frame(master)
         frame.pack()
@@ -62,7 +68,6 @@ class App:
     def say_hi(self):
         if self.state == "INIT":
             self.starttime = time.time()
-            self.started = True
             self.state = "COUNTING_DOWN"
             self.tick()
 

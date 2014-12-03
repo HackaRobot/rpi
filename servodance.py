@@ -59,16 +59,20 @@ GPIO.setup(12, GPIO.OUT) #Enable
 atexit.register(cleanup)
 GPIO.output(12, True)
 
-print "Hit enter to begin.."
-sys.stdin.readline()
+print "Start music in.."
+for sec in range(5, 0, -1):
+    print sec
+    time.sleep(1)
+print "NOW!"
 starttime = time.time()
+
 lineno = 1
-prog = re.compile("([\d\.]+)\s+(\d+)")
+prog = re.compile("(\d+)\s+([\d\.]+)")
 for line in fileinput.input():
     result = prog.match(line)
     if (result and lineno > 0):
-        delta = float(result.group(1))
-        angle = int(result.group(2)) * 120 / 500 + 50
+        angle = int(result.group(1)) * 120 / 500 + 50
+        delta = float(result.group(2))
         position(angle)
         # delta is seconds from the begin of music
         nowtime = time.time()

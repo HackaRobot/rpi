@@ -16,7 +16,8 @@
 # These will be connected to the L29D as described below.
 # "Jack up" the RC car so that the rear wheels don't actually move the car.
 # Power up the pi, then run this script as root.
-# See http://youtu.be/IePczQQMoZQ for a demo.
+# See http://youtu.be/IePczQQMoZQ for a demo. (corresponds to commit# 
+#      ecb918a435a239fead08071f1d97c88ba4ac5110 )
 
 # The conections are as follows:
 #=====================+========================+=============================+
@@ -53,26 +54,32 @@ import time
 import atexit
 
 def left():
+    print "Left turn"
     GPIO.output(15, True)
     GPIO.output(16, False)
 
 def center():
+    print "Straight"
     GPIO.output(15, False)
     GPIO.output(16, False)
 
 def right():
+    print "Right turn"
     GPIO.output(16, True)
     GPIO.output(15, False)
 
 def forward():
+    print "Forward"
     GPIO.output(13, False)
     GPIO.output(11, True)
 
-def backward():
+def reverse():
+    print "Reverse"
     GPIO.output(13, True)
     GPIO.output(11, False)
 
 def stop():
+    print "Stop"
     GPIO.output(13, False)
     GPIO.output(11, False)
 
@@ -85,6 +92,16 @@ def cleanup():
     GPIO.output(16, False)
     GPIO.cleanup()
 
+# Moves the wheels from one side to the next,
+# pausing for interval seconds, for a total of reps cycles
+def wheelswing(interval, reps):
+    for i in range(reps):
+        left()
+        time.sleep(interval)
+
+        right()
+        time.sleep(interval)
+    center()
 
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(12, GPIO.OUT) #Enable
@@ -97,24 +114,17 @@ atexit.register(cleanup)
 GPIO.output(12, True)
 
 for i in range(3):
-    left()
-    time.sleep(0.25)
-
-    right()
-    time.sleep(0.25)
-
-    center()
-    time.sleep(0.25)
 
     forward()
-    time.sleep(1)
+    time.sleep(0.25)
 
     stop()
     time.sleep(0.25)
 
-    left()
-    time.sleep(0.25)
+    wheelswing(0.25, 1)
+    time.sleep(0.55)
 
-    right()
+    reverse()
     time.sleep(0.25)
-
+    stop()
+    time.sleep(0.25)

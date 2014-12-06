@@ -2,6 +2,7 @@
 
 from Tkinter import *
 import time
+import pygame.mixer
 
 class App:
 
@@ -11,12 +12,13 @@ class App:
         tstamp = time.time()
         delta = tstamp - self.lastevt
         xdelta = 100
-        if self.lastpos:
+        if self.lastpos != None:
             xdelta = abs(event.x - self.lastpos)
         else:
             self.lastpos = event.x
-        if delta > 0.30 and xdelta > 20:
+        if delta > 0.20 and xdelta > 10:
             self.lastevt = tstamp
+            self.lastpos = event.x
             delta2 = tstamp - self.starttime
             x = event.x - 100
             if x < 0:
@@ -24,25 +26,15 @@ class App:
             if x > 500:
                 x = 500
             print x, "    ", round(delta2, 3)
-            self.lastpos = event.x
-
-    def tick(self):
-        self.countdown -= 1
-        if self.countdown == 0:
-            self.var.set("Rockin n rollin")
-            self.state = "ROCK_N_ROLL"
-            self.starttime = time.time()
-        elif self.countdown >= 0:
-            self.var.set("Start in: " + repr(self.countdown))
-            self.timer.after(1000, self.tick)
 
     def __init__(self, master):
 
         self.lastevt = time.time()
-        self.starttime = time.time()
+        self.starttime = 0
         self.countdown = 5
         self.state = "INIT"
         self.lastpos = None
+        self.bg = None
 
         frame = Frame(master)
         frame.pack()
@@ -60,16 +52,20 @@ class App:
         self.timer = Label(frame, textvariable=self.var)
         self.timer.pack(side=BOTTOM)
 
-        self.canvas = Canvas(master, width=700, height=100)
+        self.canvas = Canvas(master, width=700, height=200)
         self.canvas.bind("<Motion>", self.callback)
         self.canvas.pack()
-        self.canvas.create_rectangle(100, 0, 600, 100, fill="blue")
+        self.canvas.create_rectangle(100, 0, 600, 200, fill="blue")
+
+        pygame.mixer.init(channels=2,frequency=48000,size=-16)
+        pygame.mixer.music.load("madagascar.ogg")
 
     def say_hi(self):
         if self.state == "INIT":
+            pygame.mixer.music.play(0)
             self.starttime = time.time()
-            self.state = "COUNTING_DOWN"
-            self.tick()
+            self.state = 'ROCK_N_ROLL'
+
 
 root = Tk()
 

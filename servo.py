@@ -36,26 +36,27 @@ import RPi.GPIO as GPIO
 import time
 import atexit
 import sys
-import fileinput
-import re
-import pygame.mixer
-
 
 def cleanup():
     print "Cleaning up"
-    pygame.mixer.music.stop()
     GPIO.output(12, False)
     GPIO.cleanup()
 
 def position(angle):
     str = "0={0}\n".format(angle)
-    #print "Positioning to " + str,
+    print "Positioning to " + str,
     fd = open("/dev/servoblaster", "w")
     fd.write(str)
     fd.close()
 
-pygame.mixer.init(channels=2,frequency=48000,size=-16)
-pygame.mixer.music.load("madagascar.ogg")
+def sweep():
+    position(50)
+    time.sleep(0.25)
+    position(170)
+    time.sleep(0.5)
+    position(50)
+    time.sleep(0.5)
+
 
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(12, GPIO.OUT) #Enable
@@ -63,24 +64,7 @@ GPIO.setup(12, GPIO.OUT) #Enable
 atexit.register(cleanup)
 GPIO.output(12, True)
 
-pygame.mixer.music.play(0)
-starttime = time.time()
+for i in range(5):
+    sweep()
 
-lineno = 1
-prog = re.compile("(\d+)\s+([\d\.]+)")
-for line in fileinput.input():
-    result = prog.match(line)
-    if (result and lineno > 0):
-        angle = int(result.group(1)) * 120 / 500 + 50
-        delta = float(result.group(2))
-        position(angle)
-        # delta is seconds from the begin of music
-        nowtime = time.time()
-        endtime = starttime + delta
-        tosleep = endtime - nowtime
-        #print "Sleep ", tosleep
-        if tosleep > 0:
-            time.sleep(tosleep)
-    lineno += 1
-        
-
+print "Done"

@@ -47,10 +47,10 @@ class App:
         self.hi_there = Button(frame, text="Start", command=self.say_hi)
         self.hi_there.pack(side=LEFT)
 
-        self.var = StringVar()
-        self.var.set("Click Start to begin")
-        self.timer = Label(frame, textvariable=self.var)
-        self.timer.pack(side=BOTTOM)
+        self.filetext = Text(frame, height=1, width=20)
+        self.filetext.pack(side=RIGHT)
+        self.timer = Label(frame, textvariable="Music file path")
+        self.timer.pack(side=RIGHT)
 
         self.canvas = Canvas(master, width=700, height=200)
         self.canvas.bind("<Motion>", self.callback)
@@ -58,10 +58,11 @@ class App:
         self.canvas.create_rectangle(100, 0, 600, 200, fill="blue")
 
         pygame.mixer.init(channels=2,frequency=48000,size=-16)
-        pygame.mixer.music.load("madagascar.ogg")
 
     def say_hi(self):
         if self.state == "INIT":
+            mfile = self.filetext.get(1.0, END)[:-1]
+            pygame.mixer.music.load(mfile)
             pygame.mixer.music.play(0)
             self.starttime = time.time()
             self.state = 'ROCK_N_ROLL'

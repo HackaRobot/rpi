@@ -116,7 +116,7 @@ GPIO.output(12, True)
 for i in range(3):
 
     forward()
-    time.sleep(0.25)
+    time.sleep(1)
 
     stop()
     time.sleep(0.25)
@@ -125,6 +125,6 @@ for i in range(3):
     time.sleep(0.55)
 
     reverse()
-    time.sleep(0.25)
+    time.sleep(1)
     stop()
     time.sleep(0.25)

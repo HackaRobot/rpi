@@ -2,11 +2,12 @@
 
 # Python script to control a tracked vehicle like Tamiya crawler from
 # a raspberry pi
-# See: http://youtu.be/XaVNxZlOPxU
+# See: http://youtu.be/XaVNxZlOPxU for a demo.
 # You may have to change the values of PIN_LEFT and PIN_RIGHT below.
 # The script takes the name of a file as argument. An example is:
 # l 5     (Turn left for 5 seconds)
 # f 20    (Move forward for 20 seconds)
+# s 3     (Stop for 3 seconds)
 # r 6     (Turn right for 6 seconds)
 
 import RPi.GPIO as GPIO

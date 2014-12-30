@@ -1,0 +1,28 @@
+
+Note: This is work in progress.
+
+PiRover is a set of tools to remotely control a tracked vehicle using a 
+simple web interface. See http://youtu.be/XaVNxZlOPxU
+
+Change the IP address and port number in CGI scripts in cgi-bin.
+
+Run the webserver on any network connected machine. From this directory, type:
+
+python -m CGIHTTPServer 8000
+
+Substitute 8000 for whatever port you want the webserver to be running.
+
+
+On the Raspberry Pi, run:
+sudo rovserver.py configfile
+
+See sample configfile for format. If using inside firewall, you may need to modify firewall to let UDP traffic in.
+
+Load up:
+http://your.server.address:8000/index.html
+
+The webserver even runs within the RPi.
+
+Click "Forward" and watch your rover move!
+
+Coming soon: POV camera support.

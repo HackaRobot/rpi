@@ -1,0 +1,14 @@
+[RPI]
+# GPIO pins that control the left and right tracks respectively
+PIN_LEFT = 23
+PIN_RIGHT = 24
+
+# Chassis related
+[CHASSIS]
+# Lecture about correction goes here.
+FWD_CORRECTION_PIN = PIN_LEFT
+FWD_CORRECTION_DUTY_CYCLE = 0.9
+DUTY_PERIOD = 1
+
+LEFT_TURN_DUTY_CYCLE = 0.2
+RIGHT_TURN_DUTY_CYCLE = 0.2

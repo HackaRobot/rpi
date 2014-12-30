@@ -1,0 +1,59 @@
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en-US" xml:lang="en-US">
+<head>
+<title>Pi Rover Control</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<style>
+  body {background-color:lightgrey}
+  h1   {color:blue}
+  p    { color:green; font-size:200% }
+  input {font-face:'Comic Sans MS';
+            font-size: larger;
+            color: teal;
+            background-color: #FFFFC0;
+            border: 3pt ridge lightgrey;
+        }
+    textarea {
+        font-size: larger
+    }
+
+</style>
+
+</head>
+<body>
+
+<H1>Pi Rover Control</H1>
+
+<form method="post" action="cgi-bin/click.py" enctype="multipart/form-data">
+<p>
+
+    Duration: 
+    <input type="text"
+        name="duration"
+        size="10" maxlength="10" />
+    <br>
+    <input type="submit" name="click" value="Left"/>
+    <input type="submit" name="click" value="Stop"/>
+    <input type="submit" name="click" value="Forward"/>
+    <input type="submit" name="click" value="Right"/>
+
+</p>
+</form>
+
+<hr/>
+
+<form method="post" action="cgi-bin/txtcmds.py" enctype="multipart/form-data">
+
+<p>
+Enter commands: 
+<br/>
+    <textarea rows="4" cols="10" name="txtcmds" placeholder="Rover Commands"></textarea> 
+(E.g. f10 r3 moves rover forward 10 seconds, then turns right for 3) <br/>
+    <input type="submit" name="click" value="Go"/>
+</p>
+</form>
+
+</body>
+</html>

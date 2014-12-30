@@ -1,14 +1,30 @@
+
 [RPI]
-# GPIO pins that control the left and right tracks respectively
-PIN_LEFT = 23
-PIN_RIGHT = 24
+# Turn this on to move the left track.
+PIN_LEFT = 24
+# Turn this on to move the right track.
+PIN_RIGHT = 23
+PORT = 9999
 
-# Chassis related
 [CHASSIS]
-# Lecture about correction goes here.
-FWD_CORRECTION_PIN = PIN_LEFT
-FWD_CORRECTION_DUTY_CYCLE = 0.9
-DUTY_PERIOD = 1
+# Following two constants correct path of rover if it deviates to one side
+# During forward travel.
+# If rover deviates to right, use PIN_LEFT
+# If rover deviates to left, use PIN_RIGHT
+# Use None to disable correction.
+FWD_CORRECTION_PIN = PIN_RIGHT
 
+# To slow down a motor, we simulate PWM.
+# duty_cycle is ratio of pulse_high to total cycle time. Must always be
+# between 0 and 1.0
+# Use a larger value (but less than 1.0) for a gentler correction.
+FWD_CORRECTION_DUTY_CYCLE = 0.8
+
+# Smaller value results in sharper turns.
+# Very sharp turns can result in the tracks coming off the wheels.
 LEFT_TURN_DUTY_CYCLE = 0.2
 RIGHT_TURN_DUTY_CYCLE = 0.2
+
+# Total cycle time, smaller is better, but too small values can result in
+# high CPU utilization
+TC = 0.5

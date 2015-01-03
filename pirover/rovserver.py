@@ -1,5 +1,8 @@
 #!/usr/bin/python
 
+# This script runs inside the RPi and listens for rover commands.
+# It also takes pictures and uploads to URL.
+
 import RPi.GPIO as GPIO
 import time
 import atexit
@@ -8,6 +11,13 @@ import re
 import SocketServer
 import ConfigParser
 import sys
+import picamera
+from poster.encode import multipart_encode
+from poster.streaminghttp import register_openers
+import urllib2
+
+# the poster package can be obtained from:
+# http://atlee.ca/software/poster/dist/0.8.1
 
 HOST = "0.0.0.0" # Change to localhost if not listening from outisde
 
@@ -120,12 +130,33 @@ class MyUDPHandler(SocketServer.BaseRequestHandler):
     """
 
     def handle(self):
-        print "Got a request"
+        camera = picamera.PiCamera()
+        camera.vflip = True
+        camera.hflip = True
         data = self.request[0].strip()
         #socket = self.request[1]
         if len(data) <= 100:
             handle_request(data)
+        process_photo(camera)
 
+def process_photo(camera):
+    print "Capturing image.."
+    camera.capture('image.png', resize=(320, 240))
+    camera.close()
+    print "Done. Now uploading it."
+
+
+    # Start the multipart/form-data encoding of the file "image.png"
+
+    # headers contains the necessary Content-Type and Content-Length
+    # datagen is a generator object that yields the encoded parameters
+    datagen, headers = multipart_encode({"image": open("image.png", "rb")})
+
+    # Create the Request object
+    request = urllib2.Request(UPLOAD_URL, datagen, headers)
+    # Actually do the request, and get the response
+    resp = urllib2.urlopen(request).read()
+    # Ignore response.
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
@@ -142,6 +173,7 @@ if __name__ == "__main__":
     RIGHT_TURN_DUTY_CYCLE = config.getfloat('CHASSIS', 'RIGHT_TURN_DUTY_CYCLE')
     PORT = config.getint('RPI', 'PORT')
     TC = config.getfloat('CHASSIS', 'TC')
+    UPLOAD_URL = config.getstring('RPI', 'UPLOAD_URL')
 
     if FWD_CORRECTION_PIN == 'PIN_RIGHT':
         pin_corr = PIN_RIGHT
@@ -156,8 +188,9 @@ if __name__ == "__main__":
     GPIO.setmode(GPIO.BOARD)
     GPIO.setup(PIN_LEFT, GPIO.OUT)
     GPIO.setup(PIN_RIGHT, GPIO.OUT)
+    # Register the streaming http handlers with urllib2
+    register_openers()
     atexit.register(cleanup)
 
     server = SocketServer.UDPServer((HOST, PORT), MyUDPHandler)
     server.serve_forever()
-

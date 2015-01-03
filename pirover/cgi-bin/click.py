@@ -93,6 +93,9 @@ Enter commands:
     <input type="submit" name="click" value="Go"/>
 </p>
 </form>
+
+<iframe height="275" width="350" src="../image.html">POV Camera</iframe>
+
 """
 
 print str1.format(duration)

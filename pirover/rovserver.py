@@ -173,7 +173,7 @@ if __name__ == "__main__":
     RIGHT_TURN_DUTY_CYCLE = config.getfloat('CHASSIS', 'RIGHT_TURN_DUTY_CYCLE')
     PORT = config.getint('RPI', 'PORT')
     TC = config.getfloat('CHASSIS', 'TC')
-    UPLOAD_URL = config.getstring('RPI', 'UPLOAD_URL')
+    UPLOAD_URL = config.get('RPI', 'UPLOAD_URL')
 
     if FWD_CORRECTION_PIN == 'PIN_RIGHT':
         pin_corr = PIN_RIGHT

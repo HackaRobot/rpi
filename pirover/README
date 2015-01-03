@@ -4,6 +4,8 @@ Note: This is work in progress.
 PiRover is a set of tools to remotely control a tracked vehicle using a 
 simple web interface. See http://youtu.be/XaVNxZlOPxU
 
+Web server configuration:
+=========================
 Change the IP address and port number in CGI scripts in cgi-bin.
 
 Run the webserver on any network connected machine. From this directory, type:
@@ -13,10 +15,18 @@ python -m CGIHTTPServer 8000
 Substitute 8000 for whatever port you want the webserver to be running.
 
 
-On the Raspberry Pi, run:
+Raspberry Pi Configurtation:
+============================
+On the Raspberry Pi, you need the 'poster' package:
+     hg clone https://bitbucket.org/chrisatlee/poster poster.tmp
+     mv poster.tmp/poster poster
+If you don't have "hg", you can manually download it from:
+http://atlee.ca/software/poster/dist/0.8.1
+
+Edit the configfile and modify as per your environment. Then run:
 sudo rovserver.py configfile
 
-See sample configfile for format. If using inside firewall, you may need to modify firewall to let UDP traffic in.
+If using inside firewall, you may need to modify firewall to let UDP traffic in. You have to open up UDP port 9999 or, whatever you specified in configfile.
 
 Load up:
 http://your.server.address:8000/index.html
@@ -25,4 +35,11 @@ The webserver even runs within the RPi.
 
 Click "Forward" and watch your rover move!
 
-Coming soon: POV camera support.
+TODO:
+- Photo/video should be made optional for people who don't have camera module.
+- Photo lags behind quite a lot, it needs to load faster.
+- Low light camera support.
+- Stop refreshing photo if there's no activity.
+- Streaming video support.
+- Shut down the raspberry pi if battery runs low.
+

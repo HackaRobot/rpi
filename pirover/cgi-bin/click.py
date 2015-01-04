@@ -3,10 +3,13 @@
 import cgi
 import cgitb
 import socket
+import time
 
 # Change these to match your configuration
 # Host is the IP address of the RPi
-HOST, PORT = "99.121.26.127", 9999
+HOST, PORT = "your.rpi.ip.addr", 9999
+
+refresh_max = 30 # How many seconds are you allowed to auto-refresh
 
 def send_req(data):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -62,6 +65,7 @@ else:
     cmdstr = cmdstr + duration
     send_req(cmdstr)
 
+    repeat_until = int(time.time()) + refresh_max
     str1 = """
 
 <form method="post" action="click.py" enctype="multipart/form-data">
@@ -94,10 +98,10 @@ Enter commands:
 </p>
 </form>
 
-<iframe height="275" width="350" src="../image.html">POV Camera</iframe>
+<iframe height="275" width="350" src="image.cgi?repeat_until={1}">POV Camera</iframe>
 
 """
 
-print str1.format(duration)
+print str1.format(duration, repeat_until)
 
 print "</body></html>"

@@ -15,6 +15,7 @@ import picamera
 from poster.encode import multipart_encode
 from poster.streaminghttp import register_openers
 import urllib2
+import subprocess
 
 # the poster package can be obtained from:
 # http://atlee.ca/software/poster/dist/0.8.1
@@ -130,14 +131,11 @@ class MyUDPHandler(SocketServer.BaseRequestHandler):
     """
 
     def handle(self):
-        camera = picamera.PiCamera()
-        camera.vflip = True
-        camera.hflip = True
         data = self.request[0].strip()
-        #socket = self.request[1]
         if len(data) <= 100:
+            obj = subprocess.Popen(['./photogen.py'], stdin=subprocess.PIPE)
             handle_request(data)
-        process_photo(camera)
+            obj.communicate(input="STOP")
 
 def process_photo(camera):
     print "Capturing image.."

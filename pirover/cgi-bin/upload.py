@@ -4,6 +4,7 @@
 import cgi
 import cgitb
 import socket
+import os
 
 cgitb.enable()
 print "Content-Type: text/html"     # HTML is following
@@ -38,9 +39,10 @@ else:
     image = form["image"].value
     print "Image saved. Length="
     print len(image)
-    fp = open("image.png", "w")
+    fp = open("image.png.tmp", "w")
     fp.write(image)
     fp.close()
+    os.rename("image.png.tmp", "image.png")
 
 
 print "</body></html>"

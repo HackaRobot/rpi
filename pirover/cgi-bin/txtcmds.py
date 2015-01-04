@@ -4,12 +4,15 @@ import cgi
 import cgitb
 import socket
 import re
+import time
 
 SIM_MODE = False
 # Host is the IP address of the RPi
-HOST, PORT = "99.121.26.127", 9999
+HOST, PORT = "your.rpi.ip.addr", 9999
+refresh_max = 30 # How many seconds are you allowed to auto-refresh
 
 def print_html():
+    repeat_until = int(time.time()) + refresh_max
     str1 = """
 
 <form method="post" action="click.py" enctype="multipart/form-data">
@@ -41,9 +44,9 @@ Enter commands:
     <input type="submit" name="click" value="Go"/>
 </p>
 </form>
-<iframe height="275" width="350" src="../image.html">POV Camera</iframe>
+<iframe height="275" width="350" src="image.cgi?repeat_until={0}">POV Camera</iframe>
 """
-    print str1
+    print str1.format(repeat_until)
 
 
 def send_req(data):

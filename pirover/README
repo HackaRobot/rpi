@@ -3,6 +3,7 @@ Note: This is work in progress.
 
 PiRover is a set of tools to remotely control a tracked vehicle using a 
 simple web interface. See http://youtu.be/XaVNxZlOPxU
+Onboard camera provides a Point of View for remote navigation.
 
 Web server configuration:
 =========================

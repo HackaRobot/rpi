@@ -8,6 +8,7 @@ import time
 
 SIM_MODE = False
 # Host is the IP address of the RPi
+# CUSTOMIZE: Replace with your RPI's IP address.
 HOST, PORT = "your.rpi.ip.addr", 9999
 refresh_max = 30 # How many seconds are you allowed to auto-refresh
 
@@ -15,7 +16,7 @@ def print_html():
     repeat_until = int(time.time()) + refresh_max
     str1 = """
 
-<form method="post" action="click.py" enctype="multipart/form-data">
+<form method="post" action="click.cgi" enctype="multipart/form-data">
 <p>
 
     Duration: 
@@ -34,7 +35,7 @@ def print_html():
 
 <hr/>
 
-<form method="post" action="txtcmds.py" enctype="multipart/form-data">
+<form method="post" action="txtcmds.cgi" enctype="multipart/form-data">
 
 <p>
 Enter commands: 
@@ -44,9 +45,9 @@ Enter commands:
     <input type="submit" name="click" value="Go"/>
 </p>
 </form>
-<iframe height="275" width="350" src="image.cgi?repeat_until={0}">POV Camera</iframe>
+<img src="image.cgi"></img>
 """
-    print str1.format(repeat_until)
+    print str1
 
 
 def send_req(data):

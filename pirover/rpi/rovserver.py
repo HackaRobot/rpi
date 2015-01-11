@@ -134,6 +134,7 @@ class MyUDPHandler(SocketServer.BaseRequestHandler):
         data = self.request[0].strip()
         if len(data) <= 100:
             obj = subprocess.Popen(['./photogen.py'], stdin=subprocess.PIPE)
+            time.sleep(2) # Couple of seconds for camera to warm up
             handle_request(data)
             obj.communicate(input="STOP")
 

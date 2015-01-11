@@ -5,7 +5,7 @@ PIN_LEFT = 24
 # Turn this on to move the right track.
 PIN_RIGHT = 23
 PORT = 9999
-UPLOAD_URL = http://localhost:8000/cgi-bin/upload.py
+UPLOAD_URL="Notused"
 
 [CHASSIS]
 # Following two constants correct path of rover if it deviates to one side
@@ -19,7 +19,7 @@ FWD_CORRECTION_PIN = PIN_RIGHT
 # duty_cycle is ratio of pulse_high to total cycle time. Must always be
 # between 0 and 1.0
 # Use a larger value (but less than 1.0) for a gentler correction.
-FWD_CORRECTION_DUTY_CYCLE = 0.8
+FWD_CORRECTION_DUTY_CYCLE = 0.5
 
 # Smaller value results in sharper turns.
 # Very sharp turns can result in the tracks coming off the wheels.
@@ -28,4 +28,4 @@ RIGHT_TURN_DUTY_CYCLE = 0.2
 
 # Total cycle time, smaller is better, but too small values can result in
 # high CPU utilization
-TC = 0.5
+TC = 0.3

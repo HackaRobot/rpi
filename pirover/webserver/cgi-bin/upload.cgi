@@ -37,12 +37,12 @@ if "image" not in form:
     print "Invalid Input"
 else:
     image = form["image"].value
-    print "Image saved. Length="
-    print len(image)
-    fp = open("image.png.tmp", "w")
+    fp = open("image.jpg.tmp", "w")
     fp.write(image)
     fp.close()
-    os.rename("image.png.tmp", "image.png")
+    os.rename("image.jpg.tmp", "image.jpg")
+    print "Image saved. Length="
+    print len(image)
 
 
 print "</body></html>"

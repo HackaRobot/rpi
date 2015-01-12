@@ -14,6 +14,7 @@ refresh_max = 30 # How many seconds are you allowed to auto-refresh
 
 def send_req(data):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    print "Sending request:" + data
     sock.sendto(data, (HOST, PORT))
 
 cgitb.enable()
@@ -41,29 +42,35 @@ print "<TITLE>Pi Rover Control</TITLE>"
 
 print "<h1> Pi Rover Control</h1>"
 
+trimval = 0
 form = cgi.FieldStorage()
 if "click" not in form:
     print "<H1>Error</H1>"
     print "Invalid Input"
 else:
+    cmdstr = ""
     cmd = form["click"].value
-
-    if cmd == "Right":
-        cmdstr = "r"
-    elif cmd == "Left":
-        cmdstr = "l"
-    elif cmd == "Forward":
-        cmdstr = "f"
-    elif cmd == "Stop":
-        cmdstr = "s"
-
     duration = None
     if "duration" in form:
         duration = form["duration"].value
     if not duration:
         duration = "5"
 
-    cmdstr = cmdstr + duration
+    if "trim" in form:
+        trimstr = form["trim"].value
+        trimval = int(trimstr)
+        if trimval >= -10 and trimval <= 10:
+            cmdstr = "T" + trimstr
+    
+    if cmd == "Right":
+        cmdstr = cmdstr + " r" + duration
+    elif cmd == "Left":
+        cmdstr = cmdstr + " l" + duration
+    elif cmd == "Forward":
+        cmdstr = cmdstr + " f" + duration
+    elif cmd == "Stop":
+        cmdstr = cmdstr + " s" + duration
+
     send_req(cmdstr)
 
     repeat_until = int(time.time()) + refresh_max
@@ -84,6 +91,7 @@ else:
     <input type="submit" name="click" value="Right"/>
 
 </p>
+    Trim: Left<input type="range" name="trim" value={1} min="-10" max="10"/>Right
 </form>
 
 <hr/>
@@ -103,6 +111,6 @@ Enter commands:
 
 """
 
-print str1.format(duration)
+print str1.format(duration, trimval)
 
 print "</body></html>"

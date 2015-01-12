@@ -12,7 +12,7 @@ SIM_MODE = False
 HOST, PORT = "your.rpi.ip.addr", 9999
 refresh_max = 30 # How many seconds are you allowed to auto-refresh
 
-def print_html():
+def print_html(trimval):
     repeat_until = int(time.time()) + refresh_max
     str1 = """
 
@@ -31,6 +31,7 @@ def print_html():
     <input type="submit" name="click" value="Right"/>
 
 </p>
+    Trim: Left<input type="range" name="trim" value={0} min="-10" max="10"/>Right
 </form>
 
 <hr/>
@@ -47,7 +48,7 @@ Enter commands:
 </form>
 <img src="image.cgi"></img>
 """
-    print str1
+    print str1.format(trimval)
 
 
 def send_req(data):
@@ -97,6 +98,10 @@ if "click" not in form:
     print "<H1>Error</H1>"
     print "Invalid Input"
 else:
+    trimval = 0
+    if "trim" in form:
+        trimstr = form["trim"].value
+        trimval = int(trimstr)
     alltext = form["txtcmds"].value
     if len(alltext) < 100:
         print "Processing: ", alltext
@@ -104,5 +109,5 @@ else:
     else:
         print "Command too big. Not processing."
 
-print_html()
+print_html(trimval)
 print "</body></html>"

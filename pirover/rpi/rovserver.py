@@ -30,6 +30,7 @@ def pulse(pin, duration, duty_cycle):
     duty_cycle: Ratio of pulse_high to total cycle time. Must always be
     between 0 and 1.0 """
 
+    print "Pulsing pin {0} for {1} seconds with DC={2}".format(pin, duration, duty_cycle)
     endtime = time.time() + duration
     duration_on = duty_cycle * TC
     duration_off = TC - duration_on
@@ -62,7 +63,7 @@ def forward(duration, pin_corr=None, duty_cycle = 1):
 
 
 def stop():
-    #print "Stop"
+    print "Stop"
     GPIO.output(PIN_LEFT, False)
     GPIO.output(PIN_RIGHT, False)
 
@@ -86,15 +87,23 @@ def right(duration, duty_cycle):
     stop()
 
 def process_cmd(cmd):
+    global pin_corr
+    global FWD_CORRECTION_DUTY_CYCLE
+
     print "Processing: ", cmd
-    m = re.match('([lrfsLRFS])(\d+)', cmd)
+    m = re.match('([lrfsLRFStT])(-*\d+)', cmd)
     if not m:
         return
     command = m.group(1).lower()
     deltastr = m.group(2)
     delta = int(deltastr)
-    if delta > 30 or delta < 0:
-        return
+
+    if command == 't':
+        if delta < -10 or delta > 10:
+            return
+    else:
+        if delta > 30 or delta <= 0:
+            return
     if command == "r":
         if delta > 5:
             delta = 5
@@ -107,8 +116,17 @@ def process_cmd(cmd):
         stop() # This is really a NO-OP for now. Will be useful later.
     elif command == "f":
         forward(delta, pin_corr, FWD_CORRECTION_DUTY_CYCLE)
+    elif command == "t":
+        if delta == 0:
+            pin_corr = None
+        elif delta < 0:
+            pin_corr = PIN_LEFT
+            FWD_CORRECTION_DUTY_CYCLE = (delta+10) * 1.0 /10
+        else:
+            pin_corr = PIN_RIGHT
+            FWD_CORRECTION_DUTY_CYCLE = (10-delta) * 1.0 /10
 
-        stop()
+    stop()
 
 def handle_request(lines):
     print "Command: ", lines

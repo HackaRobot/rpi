@@ -15,7 +15,10 @@
             background-color: #FFFFC0;
             border: 3pt ridge lightgrey;
         }
-    textarea {
+  textarea {
+        font-size: larger
+    }
+  text{
         font-size: larger
     }
 
@@ -27,33 +30,25 @@
 <H1>Pi Rover Control</H1>
 
 <form method="post" action="cgi-bin/click.cgi" enctype="multipart/form-data">
-<p>
-
-    Duration: 
-    <input type="text"
-        name="duration"
-        size="10" maxlength="10" />
-    <br>
+    <p>
+        Trim: Left<input type="range" name="trim" value="0" min="-10" max="10"/>Right<br/>
+        <textarea rows="4" cols="10" name="txtcmds" placeholder="Rover Commands"></textarea> <br/>
+        <input type="submit" name="click" value="Go"/>
+    </p>
+    <p>
+        Enter commands above or click buttons below: <br/>
+        Duration: 
+        <input type="text"
+            name="duration"
+            value="5" 
+            size="10" maxlength="10" />
+    <br/>
     <input type="submit" name="click" value="Left"/>
-    <input type="submit" name="click" value="Stop"/>
     <input type="submit" name="click" value="Forward"/>
     <input type="submit" name="click" value="Right"/>
-
+    <br/>
 </p>
-    Trim: Left<input type="range" name="trim" value="0" min="-10" max="10"/>Right
-</form>
-
-<hr/>
-
-<form method="post" action="cgi-bin/txtcmds.cgi" enctype="multipart/form-data">
-
-<p>
-Enter commands: 
-<br/>
-    <textarea rows="4" cols="10" name="txtcmds" placeholder="Rover Commands"></textarea> 
-(E.g. f10 r3 moves rover forward 10 seconds, then turns right for 3) <br/>
-    <input type="submit" name="click" value="Go"/>
-</p>
+    <input type="submit" name="click" value="Snap"/>
 </form>
 
 <img src="cgi-bin/image.cgi"></img>

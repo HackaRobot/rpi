@@ -113,7 +113,7 @@ def process_cmd(cmd):
             delta = 5
         left(delta, LEFT_TURN_DUTY_CYCLE)
     elif command == "s":
-        stop() # This is really a NO-OP for now. Will be useful later.
+        time.sleep(delta)
     elif command == "f":
         forward(delta, pin_corr, FWD_CORRECTION_DUTY_CYCLE)
     elif command == "t":
@@ -154,7 +154,7 @@ class MyUDPHandler(SocketServer.BaseRequestHandler):
             obj = subprocess.Popen(['./photogen.py'], stdin=subprocess.PIPE)
             time.sleep(2) # Couple of seconds for camera to warm up
             handle_request(data)
-            obj.communicate(input="STOP")
+            obj.communicate(input="STOP") # Actual string is irrelevant. Just send something.
 
 def process_photo(camera):
     print "Capturing image.."

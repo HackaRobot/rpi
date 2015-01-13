@@ -54,6 +54,7 @@ def process_photo(camera, text=False):
     # Ignore response.
     ostream.close()
 
+endtime = time.time() + 60 # At most for 1 min.
 camera = picamera.PiCamera()
 camera.vflip = True
 camera.hflip = True
@@ -64,7 +65,7 @@ time.sleep(2) # Allow for camera warm-up
 
 process_photo(camera)
 evts = poll.poll(0)
-while len(evts) == 0:
+while len(evts) == 0 and time.time() < endtime:
     process_photo(camera)
     evts = poll.poll(0)
 

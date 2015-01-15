@@ -5,6 +5,12 @@ import cgi
 import cgitb
 import socket
 import os
+import time
+import shutil
+
+#If this is true, a folder called "archive" must exist. All images will
+# get timestamped and stored
+ARCHIVE_IMAGES = False
 
 cgitb.enable()
 print "Content-Type: text/html"     # HTML is following
@@ -37,10 +43,18 @@ if "image" not in form:
     print "Invalid Input"
 else:
     image = form["image"].value
-    fp = open("image.jpg.tmp", "w")
+    tmpfile = "image.jpg.tmp"
+    fp = open(tmpfile, "wb")
     fp.write(image)
     fp.close()
-    os.rename("image.jpg.tmp", "image.jpg")
+    shutil.move(tmpfile, "image.jpg")
+
+    if ARCHIVE_IMAGES:
+        archfile = "archive/{0}.jpg".format(time.time())
+        fp2 = open(archfile, "wb")
+        fp2.write(image)
+        fp2.close()
+
     print "Image saved. Length="
     print len(image)
 

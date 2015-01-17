@@ -46,8 +46,11 @@ def process_photo(camera, text=False):
     # Create the Request object
     request = urllib2.Request(UPLOAD_URL, datagen, headers)
     # Actually do the request, and get the response
-    resp = urllib2.urlopen(request).read()
-    #print "Upload done."
+    try:
+        resp = urllib2.urlopen(request).read()
+        #print "Upload done."
+    except:
+        print "Could not open URL:" + UPLOAD_URL
     # Ignore response.
     ostream.close()
 
@@ -73,7 +76,7 @@ while len(evts) == 0 and time.time() < endtime:
     process_photo(camera)
     evts = poll.poll(0)
 
-print "Final photo.."
+#print "Final photo.."
 process_photo(camera, text=True)
 camera.close()
-print "Done."
+print "Photo processing done."

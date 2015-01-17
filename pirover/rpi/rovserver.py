@@ -150,8 +150,9 @@ class MyUDPHandler(SocketServer.BaseRequestHandler):
 
     def handle(self):
         data = self.request[0].strip()
+        global UPLOAD_URL
         if len(data) <= 100:
-            obj = subprocess.Popen(['./photogen.py'], stdin=subprocess.PIPE)
+            obj = subprocess.Popen(['./photogen.py', UPLOAD_URL], stdin=subprocess.PIPE)
             time.sleep(2) # Couple of seconds for camera to warm up
             handle_request(data)
             obj.communicate(input="STOP") # Actual string is irrelevant. Just send something.

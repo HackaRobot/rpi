@@ -14,9 +14,6 @@ import io
 from PIL import Image, ImageDraw
 from datetime import datetime
 
-# CUSTOMIZE: Replace with your URL.
-UPLOAD_URL = "http://localhost:8000/cgi-bin/upload.cgi"
-
 def add_text(stream):
     image = Image.open(stream)
     draw = ImageDraw.Draw(image)
@@ -53,6 +50,13 @@ def process_photo(camera, text=False):
     #print "Upload done."
     # Ignore response.
     ostream.close()
+
+############## Main
+
+if len(sys.argv) != 2:
+    raise RuntimeError("usage: photogen.py upload-url")
+
+UPLOAD_URL = sys.argv[1]
 
 endtime = time.time() + 60 # At most for 1 min.
 camera = picamera.PiCamera()

@@ -5,7 +5,8 @@ PIN_LEFT = 24
 # Turn this on to move the right track.
 PIN_RIGHT = 23
 PORT = 9999
-UPLOAD_URL="Notused"
+# This needs to be URL on your webserver to upload photos to.
+UPLOAD_URL=http://localhost:8000/cgi-bin/upload.cgi
 
 [CHASSIS]
 # Following two constants correct path of rover if it deviates to one side

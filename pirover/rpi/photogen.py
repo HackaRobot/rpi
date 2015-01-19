@@ -15,6 +15,7 @@ from PIL import Image, ImageDraw
 from datetime import datetime
 
 def add_text(stream):
+    #print "Adding text"
     image = Image.open(stream)
     draw = ImageDraw.Draw(image)
     draw.line([(42, 240),(80, 200)], width=2, fill=128)
@@ -27,15 +28,16 @@ def add_text(stream):
     fp = open("tmp.jpg", "rb")
     return fp
 
-def process_photo(camera, text=False):
+def capture_photo(camera):
     #print "Capturing image.."
     ostream = io.BytesIO()
     camera.capture(ostream, format='jpeg', resize=(320, 240), use_video_port=True)
     #print "Done. Now uploading it..."
     ostream.seek(0)
 
-    if text:
-        ostream = add_text(ostream)
+    return ostream
+
+def upload_photo(ostream):
 
     # Start the multipart/form-data encoding of the file "image.jpg"
 
@@ -54,6 +56,17 @@ def process_photo(camera, text=False):
     # Ignore response.
     ostream.close()
 
+def get_next_command(timeout):
+    global pollobj
+    command = "None"
+    evts = pollobj.poll(timeout)
+    if len(evts) > 0:
+        (fd, event) = evts[0]
+        if event == select.POLLIN:
+            command = sys.stdin.readline()
+            command = command[:-1]
+    return command
+
 ############## Main
 
 if len(sys.argv) != 2:
@@ -61,22 +74,50 @@ if len(sys.argv) != 2:
 
 UPLOAD_URL = sys.argv[1]
 
-endtime = time.time() + 60 # At most for 1 min.
+state = 'WAIT'
+pollobj = select.poll()
+pollobj.register(sys.stdin, select.POLLIN)
+# Initialize camera an http upload objects.
 camera = picamera.PiCamera()
 camera.vflip = True
 camera.hflip = True
 register_openers()
-poll = select.poll()
-poll.register(0, select.POLLIN)
 time.sleep(2) # Allow for camera warm-up
 
-process_photo(camera)
-evts = poll.poll(0)
-while len(evts) == 0 and time.time() < endtime:
-    process_photo(camera)
-    evts = poll.poll(0)
+state = "WAITING"
+while True:
+    #print "State=" + state
+    # Wait for a command:
+    # Read stdin
+    # Check what the command is. Currently only START and STOP are supported.
+    # If state is 'CAPTURING', only STOP is recognized.
+    # If state is 'WAITING', only START is recognized.
+    # If comand is START, begin camera capture + upload
+    if state == 'WAITING':
+        command = get_next_command(None)
+        if command == 'START':
+            photo = capture_photo(camera)
+            state = 'UPLOADING'
+    elif state == 'UPLOADING':
+        command = get_next_command(0)
+        if command == 'STOP':
+            # There's always a photo in the uploading state
+            photo = add_text(photo)
+            state = 'STOPPING'
+        else:
+            upload_photo(photo)
+            state = 'CAPTURING'
+    elif state == 'STOPPING':
+        # Ignore all commands in the stopping state
+        upload_photo(photo)
+        state = 'WAITING'
+    elif state == 'CAPTURING':
+        command = get_next_command(0)
+        if command == 'STOP':
+            photo = capture_photo(camera)
+            photo = add_text(photo)
+            state = 'STOPPING'
+        else:
+            photo = capture_photo(camera)
+            state = 'UPLOADING'
 
-#print "Final photo.."
-process_photo(camera, text=True)
-camera.close()
-print "Photo processing done."

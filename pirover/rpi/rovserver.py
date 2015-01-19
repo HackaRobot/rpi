@@ -137,8 +137,12 @@ def handle_request(lines):
     if len(cmds) > 10:
         return
 
+    print "Sending command to photogen: START"
+    photogen_handle.stdin.write("START\n")
     for cmd in cmds:
         process_cmd(cmd)
+    print "Sending command to photogen: STOP"
+    photogen_handle.stdin.write("STOP\n")
 
 class MyUDPHandler(SocketServer.BaseRequestHandler):
     """
@@ -152,29 +156,7 @@ class MyUDPHandler(SocketServer.BaseRequestHandler):
         data = self.request[0].strip()
         global UPLOAD_URL
         if len(data) <= 100:
-            obj = subprocess.Popen(['./photogen.py', UPLOAD_URL], stdin=subprocess.PIPE)
-            time.sleep(2) # Couple of seconds for camera to warm up
             handle_request(data)
-            obj.communicate(input="STOP") # Actual string is irrelevant. Just send something.
-
-def process_photo(camera):
-    print "Capturing image.."
-    camera.capture('image.png', resize=(320, 240))
-    camera.close()
-    print "Done. Now uploading it."
-
-
-    # Start the multipart/form-data encoding of the file "image.png"
-
-    # headers contains the necessary Content-Type and Content-Length
-    # datagen is a generator object that yields the encoded parameters
-    datagen, headers = multipart_encode({"image": open("image.png", "rb")})
-
-    # Create the Request object
-    request = urllib2.Request(UPLOAD_URL, datagen, headers)
-    # Actually do the request, and get the response
-    resp = urllib2.urlopen(request).read()
-    # Ignore response.
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
@@ -211,4 +193,5 @@ if __name__ == "__main__":
     atexit.register(cleanup)
 
     server = SocketServer.UDPServer((HOST, PORT), MyUDPHandler)
+    photogen_handle = subprocess.Popen(['./photogen.py', UPLOAD_URL], stdin=subprocess.PIPE)
     server.serve_forever()

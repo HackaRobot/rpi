@@ -141,8 +141,8 @@ def handle_request(lines):
     photogen_handle.stdin.write("START\n")
     for cmd in cmds:
         process_cmd(cmd)
-    print "Sending command to photogen: STOP"
-    photogen_handle.stdin.write("STOP\n")
+    print "Sending command to photogen: PAUSE"
+    photogen_handle.stdin.write("PAUSE\n")
 
 class MyUDPHandler(SocketServer.BaseRequestHandler):
     """

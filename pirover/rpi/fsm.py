@@ -166,7 +166,6 @@ fsm['CAPTURING-PAUSE'] = ['FINAL_UPLOAD', upload_text]
 fsm['UPLOADING-COMPLETE'] = ['CAPTURING', capture]
 fsm['UPLOADING-PAUSE'] = ['FINAL_CAPTURE', capture]
 fsm['FINAL_CAPTURE-COMPLETE'] = ['FINAL_UPLOAD', upload_text]
-fsm['FINAL_CAPTURE-PAUSE'] = ['FINAL_UPLOAD', upload_text]
 fsm['FINAL_UPLOAD-COMPLETE'] = ['WARM_WAIT', wait_command_timeout]
 fsm['COLD_WAIT-START'] = ['CAPTURING', capture_warmup]
 events = deque()

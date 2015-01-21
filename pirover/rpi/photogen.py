@@ -1,4 +1,12 @@
 #!/usr/bin/python
+from collections import deque
+import sys, time, select
+import FSM
+
+# These are in seconds
+WARM_WAIT_TIMEOUT = 100 # How many seconds we wait with camera activated
+MAX_UPLOAD_PERIOD = 45 # Stop uploading after this seconds.
+
 import time
 import picamera
 from poster.encode import multipart_encode
@@ -23,19 +31,23 @@ def add_text(stream):
     #PIL cannot save to a stream, so write to a file and read it back.
     image.save("tmp.jpg", format="jpeg")
     fp = open("tmp.jpg", "rb")
+    stream.close()
     return fp
 
-def capture_photo(camera):
+def capture_photo():
     #print "Capturing image.."
+    global camera
+    if not camera:
+        camera_on()
     ostream = io.BytesIO()
-    camera.capture(ostream, format='jpeg', resize=(320, 240), use_video_port=True)
+    camera.capture(ostream, format='jpeg', resize=(320, 240),
+                   use_video_port=True)
     #print "Done. Now uploading it..."
     ostream.seek(0)
 
     return ostream
 
 def upload_photo(ostream):
-
     # Start the multipart/form-data encoding of the file "image.jpg"
 
     # headers contains the necessary Content-Type and Content-Length
@@ -53,141 +65,121 @@ def upload_photo(ostream):
     # Ignore response.
     ostream.close()
 
-def enqueue_event(event):
-    #print "Enqueueing: " + event
-    events.append(event)
-
-def have_events():
-    return (len(events) > 0)
-
-
-def deliver_event(event):
-    global state
-    str = state + '-' + event
-    if not str in fsm:
-        raise RuntimeError("Don't know how to handle event {0} while in state {1}".format(event, state))
-    (nextstate, action) = fsm[str]
-    print "Current state: {0}, event: {1}, next state: {2}".format(state, event, nextstate)
-    state = nextstate;
-    if action:
-        action()
-
-def fire_timed_events():
-    global timers
-    nevents = 0
-    if 'PAUSE' in timers and (time.time() >= timers['PAUSE']):
-       enqueue_event('PAUSE')
-       nevents += 1
-       del timers['PAUSE']
-    return nevents
-
-def capture(warmup = False):
-    print "**************Capturing"
+def camera_on():
     global camera
+    camera = picamera.PiCamera()
+    camera.vflip = True
+    camera.hflip = True
+
+def capture():
+    #print "**************Capturing"
+    global fsm
     global photo
-
-    if camera == None:
-        camera = picamera.PiCamera()
-        camera.vflip = True
-        camera.hflip = True
-        time.sleep(3)
-    ostream = io.BytesIO()
-    camera.capture(ostream, format='jpeg', resize=(320, 240), use_video_port=True)
-    ostream.seek(0)
-    photo = ostream
-
+    photo = capture_photo()
+    # Reset timer(s)
     # Check if there's an event. If not, generate COMPLETE
     if fire_timed_events() == 0:
         if not wait_command(timeout=0):
-            enqueue_event('COMPLETE')
+            fsm.enqueue_event('COMPLETE')
 
-def capture_warmup():
-    return capture(warmup=True)
+def final_capture():
+    global timers
+    del timers['UPLOAD_TIMEOUT']
+    return capture()
 
 def upload():
-    print "**************Uploading"
+    global fsm
     global photo
+    #print "**************Uploading"
     upload_photo(photo)
     if fire_timed_events() == 0:
         if not wait_command(timeout=0):
-            enqueue_event('COMPLETE')
+            fsm.enqueue_event('COMPLETE')
 
 def upload_text():
-    print "************Adding text and uploading"
+    global fsm
     global photo
+    #print "************Adding text and uploading"
     photo = add_text(photo)
     upload_photo(photo)
-    enqueue_event('COMPLETE')
-
-def get_next_event():
-    if len(events) == 0:
-        raise RuntimeError("Event queue is empty!")
-    return events.popleft()
+    fsm.enqueue_event('COMPLETE')
 
 def wait_command(timeout=None):
-    print "Waiting for a command.."
+    # print "Waiting for a command.."
     global pollobj
-    print "Wait for: ", timeout
+    global fsm
+
     pollevts = pollobj.poll(timeout)
-    print "Got something. sizeo evets=",len(pollevts)
     if len(pollevts) > 0:
         pollfd, pollevt = pollevts[0]
         if pollevt == select.POLLIN:
             inline = sys.stdin.readline()
             event = inline[:-1] # Remove newline
-            enqueue_event(event)
+            fsm.enqueue_event(event)
             if event == 'START':
-                timers['PAUSE'] = time.time() + 15
+               add_timed_event('UPLOAD_TIMEOUT',
+                               time.time() + MAX_UPLOAD_PERIOD, 'PAUSE')
             return True
     return False
 
 def wait_command_timeout():
-    if not wait_command(timeout=15000):
-        enqueue_event('COMPLETE')
+    global fsm
+    if not wait_command(timeout=WARM_WAIT_TIMEOUT * 1000):
+        fsm.enqueue_event('COMPLETE')
 
 def cold_wait_command():
-    print "***** Turning cam off"
+    #print "***** Turning cam off"
     global camera
     camera.close()
     camera = None
     return wait_command()
 
-def begin_capture():
-    timers['PAUSE'] = time.time() + 10
-    return capture()
+def add_timed_event(name, endtime, event):
+    global timers
+    timers[name] = (endtime, event)
 
-fsm = {}
-fsm['INIT-BEGIN'] = ['WARM_WAIT', wait_command_timeout]
-fsm['WARM_WAIT-START'] = ['CAPTURING', begin_capture]
-fsm['WARM_WAIT-PAUSE'] = ['WARM_WAIT', wait_command_timeout] # NO-OP
-fsm['WARM_WAIT-COMPLETE'] = ['COLD_WAIT', cold_wait_command] # NO-OP
-fsm['CAPTURING-COMPLETE'] = ['UPLOADING', upload]
-fsm['CAPTURING-PAUSE'] = ['FINAL_UPLOAD', upload_text]
-fsm['UPLOADING-COMPLETE'] = ['CAPTURING', capture]
-fsm['UPLOADING-PAUSE'] = ['FINAL_CAPTURE', capture]
-fsm['FINAL_CAPTURE-COMPLETE'] = ['FINAL_UPLOAD', upload_text]
-fsm['FINAL_CAPTURE-PAUSE'] = ['FINAL_UPLOAD', upload_text]
-fsm['FINAL_UPLOAD-COMPLETE'] = ['WARM_WAIT', wait_command_timeout]
-fsm['COLD_WAIT-START'] = ['CAPTURING', capture_warmup]
-events = deque()
-state = 'INIT'
-timers = {}
+def fire_timed_events():
+    nevents = 0
+    global fsm
+    global timers
+    for k, v in timers.iteritems():
+        if v:
+            (endtime, event) = v
+            if time.time() >= endtime:
+               fsm.enqueue_event(event)
+               nevents += 1
+               timers[k] = None
+    return nevents
 
-
+############################## Begin main ##################################
 if len(sys.argv) != 2:
     raise RuntimeError("usage: photogen.py upload-url")
 UPLOAD_URL = sys.argv[1]
-# Initialize camera an http upload objects.
-camera = picamera.PiCamera()
-camera.vflip = True
-camera.hflip = True
-register_openers()
-time.sleep(2) # Allow for camera warm-up
+
+state_table = {}
+state_table['INIT-BEGIN'] = ['WARM_WAIT', wait_command_timeout]
+state_table['WARM_WAIT-START'] = ['CAPTURING', capture]
+state_table['WARM_WAIT-PAUSE'] = ['WARM_WAIT', wait_command_timeout] # NO-OP
+state_table['WARM_WAIT-COMPLETE'] = ['COLD_WAIT', cold_wait_command] # NO-OP
+state_table['CAPTURING-COMPLETE'] = ['UPLOADING', upload]
+state_table['CAPTURING-PAUSE'] = ['FINAL_UPLOAD', upload_text]
+state_table['UPLOADING-COMPLETE'] = ['CAPTURING', capture]
+state_table['UPLOADING-PAUSE'] = ['FINAL_CAPTURE', final_capture]
+state_table['FINAL_CAPTURE-COMPLETE'] = ['FINAL_UPLOAD', upload_text]
+state_table['FINAL_CAPTURE-PAUSE'] = ['FINAL_UPLOAD', upload_text]
+state_table['FINAL_UPLOAD-COMPLETE'] = ['WARM_WAIT', wait_command_timeout]
+state_table['COLD_WAIT-START'] = ['CAPTURING', capture]
+
+fsm = FSM.FSM(state_table)
+# The format is EVENT_NAME => (endtime, evenststr)
+timers = {}
 
 pollobj = select.poll()
 pollobj.register(sys.stdin, select.POLLIN)
+photo = None
 
-enqueue_event('BEGIN')
-while True:
-    event = get_next_event()
-    deliver_event(event)
+register_openers()
+camera_on()
+
+fsm.enqueue_event('BEGIN')
+fsm.run()

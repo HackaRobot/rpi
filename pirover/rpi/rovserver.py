@@ -34,11 +34,12 @@ def pulse(pin, duration, duty_cycle):
     endtime = time.time() + duration
     duration_on = duty_cycle * TC
     duration_off = TC - duration_on
-    while endtime > time.time():
-        GPIO.output(pin, True)
-        time.sleep(duration_on)
-        GPIO.output(pin, False)
-        time.sleep(duration_off)
+
+    freq = 10
+    p = GPIO.PWM(pin, freq)
+    p.start(duty_cycle * 100)
+    time.sleep(duration)
+    p.stop()
 
 # pin_corr must be one of PIN_RIGHT or PIN_LEFT.
 # See paramater for pulse() for definition of duty_cycle

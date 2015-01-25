@@ -13,9 +13,9 @@ HOST, PORT = "your.rpi.ip.addr", 9999
 
 refresh_max = 30 # How many seconds are you allowed to auto-refresh
 
-def send_req(data):
+def send_req(data, ipaddr):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    print "Sending request:" + data
+    print "Sending request:" + data + " to " + ipaddr
     sock.sendto(data, (HOST, PORT))
 
 cgitb.enable()
@@ -37,7 +37,7 @@ print """
 
 </style>
 """
-def print_html_form(trimval=0, duration=5):
+def print_html_form(trimval=0, duration=5, ipaddr="0.0.0.0"):
     html = """
 <form method="post" action="click.cgi" enctype="multipart/form-data">
     <p>
@@ -56,16 +56,18 @@ def print_html_form(trimval=0, duration=5):
     <input type="submit" name="click" value="Left"/>
     <input type="submit" name="click" value="Forward"/>
     <input type="submit" name="click" value="Right"/>
+    <input type="submit" name="click" value="Back"/>
     <br/>
 </p>
     <input type="submit" name="click" value="Snap"/>
+    <input type="hidden" name="ipaddr" value="{2}"/>
 </form>
 
 <img src="image.cgi"></img>
 """
-    print html.format(trimval, duration)
+    print html.format(trimval, duration, ipaddr)
 
-def process_text_commands(text):
+def process_text_commands(text, ipaddr):
     # All commands must follow the correct syntax and there cannot be more than
     # 10 commands at a time.
     # Else discard the entire text
@@ -73,10 +75,10 @@ def process_text_commands(text):
     if len(tokens) > 10:
         return
     for token in tokens:
-        if not re.match('([lrfsLRFStT])(-*\d+)', token):
+        if not re.match('([lrfsLRFStTbB])(-*\d+)', token):
             return
 
-    send_req(text.lower())
+    send_req(text.lower(), ipaddr)
 
 
 print                               # blank line, end of headers
@@ -87,12 +89,14 @@ print "<h1> Pi Rover Control</h1>"
 
 trimval = 0
 duration = 5
+ipaddr="Unknown"
 
 form = cgi.FieldStorage()
-if "click" not in form:
+if ("click" not in form) or ("ipaddr" not in form):
     print "<H1>Error</H1>"
     print "Invalid Input"
 else:
+    ipaddr = form["ipaddr"].value # Validate IP address. TODO
     cmdstr = ""
     if "trim" in form:
         trimstr = form["trim"].value
@@ -101,7 +105,7 @@ else:
             cmdstr = "T" + trimstr
     cmd = form["click"].value
     if cmd == "Go":
-        process_text_commands(form["txtcmds"].value)
+        process_text_commands(form["txtcmds"].value, ipaddr)
     else:
         if "duration" in form:
             duration = form["duration"].value
@@ -115,9 +119,11 @@ else:
             cmdstr = cmdstr + " f" + duration
         elif cmd == "Snap":
             cmdstr = cmdstr + " s" + duration
+        elif cmd == "Back":
+            cmdstr = cmdstr + " b" + duration
 
-        send_req(cmdstr)
+        send_req(cmdstr, ipaddr)
 
-print_html_form(trimval=trimval, duration=duration)
+print_html_form(trimval=trimval, duration=duration, ipaddr=ipaddr)
 
 print "</body></html>"

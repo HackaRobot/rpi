@@ -10,7 +10,7 @@ import shutil
 
 #If this is true, a folder called "archive" must exist. All images will
 # get timestamped and stored
-ARCHIVE_IMAGES = False
+ARCHIVE_IMAGES = True
 
 cgitb.enable()
 print "Content-Type: text/html"     # HTML is following

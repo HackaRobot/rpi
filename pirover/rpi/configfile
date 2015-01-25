@@ -8,7 +8,7 @@ PIN_RIGHT_REV = 21
 PIN_ENABLE = 26
 PORT = 9999
 # Change to URL on your webserver.
-UPLOAD_URL=http://192.168.1.75:8000/cgi-bin/upload.cgi
+UPLOAD_URL=http://localhost:8000/cgi-bin/upload.cgi
 
 [CHASSIS]
 # Following two constants correct path of rover if it deviates to one side

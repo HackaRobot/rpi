@@ -41,58 +41,61 @@ def pulse(pin, duration, duty_cycle):
     time.sleep(duration)
     p.stop()
 
-# pin_corr must be one of PIN_RIGHT or PIN_LEFT.
-# See paramater for pulse() for definition of duty_cycle
-def forward(duration, pin_corr=None, duty_cycle = 1):
-    #print "Forward"
-    if pin_corr and pin_corr != PIN_LEFT and pin_corr != PIN_RIGHT:
-        raise RuntimeError("Invalid pin_corr")
+def right(duration):
+    print "Left turn"
+    GPIO.output(PIN_RIGHT_FWD, False)
+    GPIO.output(PIN_RIGHT_REV, True)
+    GPIO.output(PIN_LEFT_FWD, True)
+    GPIO.output(PIN_LEFT_REV, False)
+    time.sleep(duration)
 
-    pin_const = PIN_RIGHT
-    if pin_corr == PIN_RIGHT:
-        pin_const = PIN_LEFT
+def forward(duration):
+    print "Forward"
+    GPIO.output(PIN_LEFT_FWD, True)
+    GPIO.output(PIN_LEFT_REV, False)
+    GPIO.output(PIN_RIGHT_FWD, True)
+    GPIO.output(PIN_RIGHT_REV, False)
+    time.sleep(duration)
 
-    if pin_corr:
-        GPIO.output(pin_const, True)
-        starttime = time.time()
-        endtime = starttime + duration
-        pulse(pin_corr, duration, duty_cycle)
-    else:
-        GPIO.output(PIN_RIGHT, True)
-        GPIO.output(PIN_LEFT, True)
-        time.sleep(duration)
+def left(duration):
+    print "Right turn"
+    GPIO.output(PIN_RIGHT_FWD, True)
+    GPIO.output(PIN_RIGHT_REV, False)
+    GPIO.output(PIN_LEFT_FWD, False)
+    GPIO.output(PIN_LEFT_REV, True)
+    time.sleep(duration)
 
+def reverse(duration):
+    print "Reverse"
+    GPIO.output(PIN_LEFT_FWD, False)
+    GPIO.output(PIN_LEFT_REV, True)
+    GPIO.output(PIN_RIGHT_FWD, False)
+    GPIO.output(PIN_RIGHT_REV, True)
+    time.sleep(duration)
 
 def stop():
     print "Stop"
-    GPIO.output(PIN_LEFT, False)
-    GPIO.output(PIN_RIGHT, False)
+    GPIO.output(PIN_LEFT_FWD, False)
+    GPIO.output(PIN_LEFT_REV, False)
+    GPIO.output(PIN_RIGHT_FWD, False)
+    GPIO.output(PIN_RIGHT_REV, False)
+
+def enable():
+    GPIO.output(PIN_ENABLE, True)
+
+def disable():
+    GPIO.output(PIN_ENABLE, False)
 
 def cleanup():
     print "Cleaning up"
-    GPIO.output(PIN_LEFT, False)
-    GPIO.output(PIN_RIGHT, False)
     GPIO.cleanup()
-
-def left(duration, duty_cycle):
-    print "Left turn for ", duration
-    GPIO.output(PIN_RIGHT, True)
-    pulse(PIN_LEFT, duration, duty_cycle)
-    stop()
-
-def right(duration, duty_cycle):
-    print "Right turn for ", duration
-    # Keep left track moving, slow down the right one.
-    GPIO.output(PIN_LEFT, True)
-    pulse(PIN_RIGHT, duration, duty_cycle)
-    stop()
 
 def process_cmd(cmd):
     global pin_corr
     global FWD_CORRECTION_DUTY_CYCLE
 
     print "Processing: ", cmd
-    m = re.match('([lrfsLRFStT])(-*\d+)', cmd)
+    m = re.match('([lrfsLRFStTbB])(-*\d+)', cmd)
     if not m:
         return
     command = m.group(1).lower()
@@ -108,24 +111,17 @@ def process_cmd(cmd):
     if command == "r":
         if delta > 5:
             delta = 5
-        right(delta, RIGHT_TURN_DUTY_CYCLE)
+        right(delta)
     elif command == "l":
         if delta > 5:
             delta = 5
-        left(delta, LEFT_TURN_DUTY_CYCLE)
+        left(delta)
     elif command == "s":
         time.sleep(delta)
     elif command == "f":
-        forward(delta, pin_corr, FWD_CORRECTION_DUTY_CYCLE)
-    elif command == "t":
-        if delta == 0:
-            pin_corr = None
-        elif delta < 0:
-            pin_corr = PIN_LEFT
-            FWD_CORRECTION_DUTY_CYCLE = (delta+10) * 1.0 /10
-        else:
-            pin_corr = PIN_RIGHT
-            FWD_CORRECTION_DUTY_CYCLE = (10-delta) * 1.0 /10
+        forward(delta)
+    elif command == "b":
+        reverse(delta)
 
     stop()
 
@@ -166,8 +162,11 @@ if __name__ == "__main__":
     config = ConfigParser.RawConfigParser()
     config.read(sys.argv[1])
 
-    PIN_LEFT = config.getint('RPI', 'PIN_LEFT')
-    PIN_RIGHT = config.getint('RPI', 'PIN_RIGHT')
+    PIN_LEFT_FWD = config.getint('RPI', 'PIN_LEFT_FWD')
+    PIN_RIGHT_FWD = config.getint('RPI', 'PIN_RIGHT_FWD')
+    PIN_LEFT_REV = config.getint('RPI', 'PIN_LEFT_REV')
+    PIN_RIGHT_REV = config.getint('RPI', 'PIN_RIGHT_REV')
+    PIN_ENABLE = config.getint('RPI', 'PIN_ENABLE')
     FWD_CORRECTION_PIN = config.get('CHASSIS', 'FWD_CORRECTION_PIN')
     FWD_CORRECTION_DUTY_CYCLE = config.getfloat('CHASSIS', 'FWD_CORRECTION_DUTY_CYCLE')
     LEFT_TURN_DUTY_CYCLE = config.getfloat('CHASSIS', 'LEFT_TURN_DUTY_CYCLE')
@@ -177,9 +176,9 @@ if __name__ == "__main__":
     UPLOAD_URL = config.get('RPI', 'UPLOAD_URL')
 
     if FWD_CORRECTION_PIN == 'PIN_RIGHT':
-        pin_corr = PIN_RIGHT
+        pin_corr = 0 # FIXME
     elif FWD_CORRECTION_PIN == 'PIN_LEFT':
-        pin_corr = PIN_LEFT
+        pin_corr = 0 # FIXME
     elif FWD_CORRECTION_PIN == 'None':
         pin_corr = None
     else:
@@ -187,11 +186,15 @@ if __name__ == "__main__":
 
 
     GPIO.setmode(GPIO.BOARD)
-    GPIO.setup(PIN_LEFT, GPIO.OUT)
-    GPIO.setup(PIN_RIGHT, GPIO.OUT)
+    GPIO.setup(PIN_LEFT_FWD, GPIO.OUT)
+    GPIO.setup(PIN_LEFT_REV, GPIO.OUT)
+    GPIO.setup(PIN_RIGHT_FWD, GPIO.OUT)
+    GPIO.setup(PIN_RIGHT_REV, GPIO.OUT)
+    GPIO.setup(PIN_ENABLE, GPIO.OUT)
     # Register the streaming http handlers with urllib2
     register_openers()
     atexit.register(cleanup)
+    enable()
 
     server = SocketServer.UDPServer((HOST, PORT), MyUDPHandler)
     photogen_handle = subprocess.Popen(['./photogen.py', UPLOAD_URL], stdin=subprocess.PIPE)

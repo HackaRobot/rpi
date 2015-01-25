@@ -1,12 +1,14 @@
 
 [RPI]
-# Turn this on to move the left track.
-PIN_LEFT = 24
-# Turn this on to move the right track.
-PIN_RIGHT = 23
+# Pins refer to GPIO pins for inputs to L293D or similar motor controller
+PIN_LEFT_FWD = 11
+PIN_LEFT_REV = 12
+PIN_RIGHT_FWD = 22
+PIN_RIGHT_REV = 21
+PIN_ENABLE = 26
 PORT = 9999
-# This needs to be URL on your webserver to upload photos to.
-UPLOAD_URL=http://localhost:8000/cgi-bin/upload.cgi
+# Change to URL on your webserver.
+UPLOAD_URL=http://192.168.1.75:8000/cgi-bin/upload.cgi
 
 [CHASSIS]
 # Following two constants correct path of rover if it deviates to one side

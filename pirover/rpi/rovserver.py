@@ -43,11 +43,11 @@ def pulse(pin, duration, duty_cycle):
 
 def right(duration):
     print "Right turn"
-    GPIO.output(PIN_RIGHT_FWD, False)
-    GPIO.output(PIN_RIGHT_REV, True)
+    #GPIO.output(PIN_RIGHT_FWD, False)
+    GPIO.output(PIN_RIGHT_REV, False)
     GPIO.output(PIN_LEFT_FWD, True)
     GPIO.output(PIN_LEFT_REV, False)
-    time.sleep(duration)
+    pulse(PIN_RIGHT_FWD, duration, 0.1)
 
 def forward(duration, trim = None):
     print "Forward"
@@ -72,8 +72,9 @@ def left(duration):
     print "Left turn"
     GPIO.output(PIN_RIGHT_FWD, True)
     GPIO.output(PIN_RIGHT_REV, False)
-    GPIO.output(PIN_LEFT_FWD, False)
-    GPIO.output(PIN_LEFT_REV, True)
+    #GPIO.output(PIN_LEFT_FWD, False)
+    GPIO.output(PIN_LEFT_REV, False)
+    pulse(PIN_LEFT_FWD, duration, 0.1)
     time.sleep(duration)
 
 def reverse(duration):

@@ -30,7 +30,7 @@ def pulse(pin, duration, duty_cycle):
     duty_cycle: Ratio of pulse_high to total cycle time. Must always be
     between 0 and 1.0 """
 
-    print "Pulsing pin {0} for {1} seconds with DC={2}".format(pin, duration, duty_cycle)
+    #print "Pulsing pin {0} for {1} seconds with DC={2}".format(pin, duration, duty_cycle)
     endtime = time.time() + duration
     duration_on = duty_cycle * TC
     duration_off = TC - duration_on
@@ -42,23 +42,34 @@ def pulse(pin, duration, duty_cycle):
     p.stop()
 
 def right(duration):
-    print "Left turn"
+    print "Right turn"
     GPIO.output(PIN_RIGHT_FWD, False)
     GPIO.output(PIN_RIGHT_REV, True)
     GPIO.output(PIN_LEFT_FWD, True)
     GPIO.output(PIN_LEFT_REV, False)
     time.sleep(duration)
 
-def forward(duration):
+def forward(duration, trim = None):
     print "Forward"
+    global FWD_CORRECTION_DUTY_CYCLE
     GPIO.output(PIN_LEFT_FWD, True)
     GPIO.output(PIN_LEFT_REV, False)
     GPIO.output(PIN_RIGHT_FWD, True)
     GPIO.output(PIN_RIGHT_REV, False)
-    time.sleep(duration)
+    if trim and (trim != 0):
+        # One of the pins will pulse. Determine which one.
+        if trim < 0: # We want to deviate to the left. Slow down left belt
+            pin_pulse = PIN_LEFT_FWD
+            dc = (trim + 10) * 1.0 /10
+        else:
+            pin_pulse = PIN_RIGHT_FWD
+            dc = (10 - trim) * 1.0 /10
+        pulse(pin_pulse, duration, dc)
+    else:
+        time.sleep(duration)
 
 def left(duration):
-    print "Right turn"
+    print "Left turn"
     GPIO.output(PIN_RIGHT_FWD, True)
     GPIO.output(PIN_RIGHT_REV, False)
     GPIO.output(PIN_LEFT_FWD, False)
@@ -91,10 +102,10 @@ def cleanup():
     GPIO.cleanup()
 
 def process_cmd(cmd):
-    global pin_corr
+    global TRIM
     global FWD_CORRECTION_DUTY_CYCLE
 
-    print "Processing: ", cmd
+    #print "Processing: ", cmd
     m = re.match('([lrfsLRFStTbB])(-*\d+)', cmd)
     if not m:
         return
@@ -105,6 +116,7 @@ def process_cmd(cmd):
     if command == 't':
         if delta < -10 or delta > 10:
             return
+        TRIM = delta
     else:
         if delta > 30 or delta <= 0:
             return
@@ -119,14 +131,14 @@ def process_cmd(cmd):
     elif command == "s":
         time.sleep(delta)
     elif command == "f":
-        forward(delta)
+        forward(delta, TRIM)
     elif command == "b":
         reverse(delta)
 
     stop()
 
 def handle_request(lines):
-    print "Command: ", lines
+    #print "Command: ", lines
     lines = lines.lower()
     lines = lines.strip()
     cmds = lines.split()
@@ -134,11 +146,11 @@ def handle_request(lines):
     if len(cmds) > 10:
         return
 
-    print "Sending command to photogen: START"
+    #print "Sending command to photogen: START"
     photogen_handle.stdin.write("START\n")
     for cmd in cmds:
         process_cmd(cmd)
-    print "Sending command to photogen: PAUSE"
+    #print "Sending command to photogen: PAUSE"
     photogen_handle.stdin.write("PAUSE\n")
 
 class MyUDPHandler(SocketServer.BaseRequestHandler):
@@ -167,7 +179,6 @@ if __name__ == "__main__":
     PIN_LEFT_REV = config.getint('RPI', 'PIN_LEFT_REV')
     PIN_RIGHT_REV = config.getint('RPI', 'PIN_RIGHT_REV')
     PIN_ENABLE = config.getint('RPI', 'PIN_ENABLE')
-    FWD_CORRECTION_PIN = config.get('CHASSIS', 'FWD_CORRECTION_PIN')
     FWD_CORRECTION_DUTY_CYCLE = config.getfloat('CHASSIS', 'FWD_CORRECTION_DUTY_CYCLE')
     LEFT_TURN_DUTY_CYCLE = config.getfloat('CHASSIS', 'LEFT_TURN_DUTY_CYCLE')
     RIGHT_TURN_DUTY_CYCLE = config.getfloat('CHASSIS', 'RIGHT_TURN_DUTY_CYCLE')
@@ -175,14 +186,7 @@ if __name__ == "__main__":
     TC = config.getfloat('CHASSIS', 'TC')
     UPLOAD_URL = config.get('RPI', 'UPLOAD_URL')
 
-    if FWD_CORRECTION_PIN == 'PIN_RIGHT':
-        pin_corr = 0 # FIXME
-    elif FWD_CORRECTION_PIN == 'PIN_LEFT':
-        pin_corr = 0 # FIXME
-    elif FWD_CORRECTION_PIN == 'None':
-        pin_corr = None
-    else:
-        raise RuntimeError("FWD_CORRECTION_PIN must be one of PINLEFT, PIN_RIGHT or None")
+    TRIM = None
 
 
     GPIO.setmode(GPIO.BOARD)

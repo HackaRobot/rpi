@@ -30,7 +30,7 @@ def pulse(pin, duration, duty_cycle):
     duty_cycle: Ratio of pulse_high to total cycle time. Must always be
     between 0 and 1.0 """
 
-    #print "Pulsing pin {0} for {1} seconds with DC={2}".format(pin, duration, duty_cycle)
+    print "Pulsing pin {0} for {1} seconds with DC={2}".format(pin, duration, duty_cycle)
     endtime = time.time() + duration
     duration_on = duty_cycle * TC
     duration_off = TC - duration_on
@@ -43,11 +43,12 @@ def pulse(pin, duration, duty_cycle):
 
 def right(duration):
     print "Right turn"
+    global TURN_DUTY_CYCLE
     #GPIO.output(PIN_RIGHT_FWD, False)
     GPIO.output(PIN_RIGHT_REV, False)
     GPIO.output(PIN_LEFT_FWD, True)
     GPIO.output(PIN_LEFT_REV, False)
-    pulse(PIN_RIGHT_FWD, duration, 0.1)
+    pulse(PIN_RIGHT_FWD, duration, TURN_DUTY_CYCLE)
 
 def forward(duration, trim = None):
     print "Forward"
@@ -70,12 +71,12 @@ def forward(duration, trim = None):
 
 def left(duration):
     print "Left turn"
+    global TURN_DUTY_CYCLE
     GPIO.output(PIN_RIGHT_FWD, True)
     GPIO.output(PIN_RIGHT_REV, False)
     #GPIO.output(PIN_LEFT_FWD, False)
     GPIO.output(PIN_LEFT_REV, False)
-    pulse(PIN_LEFT_FWD, duration, 0.1)
-    time.sleep(duration)
+    pulse(PIN_LEFT_FWD, duration, TURN_DUTY_CYCLE)
 
 def reverse(duration):
     print "Reverse"
@@ -137,6 +138,7 @@ def process_cmd(cmd):
         reverse(delta)
 
     stop()
+    time.sleep(0.1)
 
 def handle_request(lines):
     #print "Command: ", lines
@@ -149,8 +151,10 @@ def handle_request(lines):
 
     #print "Sending command to photogen: START"
     photogen_handle.stdin.write("START\n")
+    enable()
     for cmd in cmds:
         process_cmd(cmd)
+    disable()
     #print "Sending command to photogen: PAUSE"
     photogen_handle.stdin.write("PAUSE\n")
 
@@ -181,7 +185,7 @@ if __name__ == "__main__":
     PIN_RIGHT_REV = config.getint('RPI', 'PIN_RIGHT_REV')
     PIN_ENABLE = config.getint('RPI', 'PIN_ENABLE')
     FWD_CORRECTION_DUTY_CYCLE = config.getfloat('CHASSIS', 'FWD_CORRECTION_DUTY_CYCLE')
-    LEFT_TURN_DUTY_CYCLE = config.getfloat('CHASSIS', 'LEFT_TURN_DUTY_CYCLE')
+    TURN_DUTY_CYCLE = 0.3
     RIGHT_TURN_DUTY_CYCLE = config.getfloat('CHASSIS', 'RIGHT_TURN_DUTY_CYCLE')
     PORT = config.getint('RPI', 'PORT')
     TC = config.getfloat('CHASSIS', 'TC')

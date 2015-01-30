@@ -9,6 +9,14 @@ PIN_ENABLE = 26
 PORT = 9999
 # Change to URL on your webserver.
 UPLOAD_URL=http://localhost:8000/cgi-bin/upload.cgi
+# The following are coordinates for drawing "guide line", suporimposed over 
+# the POV images. They give an estimate of the path of travel for the rover.
+GUIDELINE_LL_X = 62
+GUIDELINE_LR_X = 207
+GUIDELINE_UL_X = 85
+GUIDELINE_UR_X = 183
+GUIDELINE_TOP = 212
+GUIDELINE_BOTTOM = 240
 
 [CHASSIS]
 # Following two constants correct path of rover if it deviates to one side

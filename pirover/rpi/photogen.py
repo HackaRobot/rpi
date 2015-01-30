@@ -21,10 +21,17 @@ from collections import deque
 
 def add_text(stream):
     #print "Adding text"
+    global GUIDELINE_LL_X
+    global GUIDELINE_LR_X
+    global GUIDELINE_UL_X
+    global GUIDELINE_UR_X
+    global GUIDELINE_TOP
+    global GUIDELINE_BOTTOM
+
     image = Image.open(stream)
     draw = ImageDraw.Draw(image)
-    draw.line([(42, 240),(80, 200)], width=2, fill=128)
-    draw.line([(207, 240),(190, 190)], width=2, fill=128)
+    draw.line([(GUIDELINE_LL_X, GUIDELINE_BOTTOM),(GUIDELINE_UL_X, GUIDELINE_TOP)], width=2, fill=128)
+    draw.line([(GUIDELINE_LR_X, GUIDELINE_BOTTOM),(GUIDELINE_UR_X, GUIDELINE_TOP)], width=2, fill=128)
     now = datetime.now()
     str = now.strftime("%H:%M")
     draw.text((0, 0), str)
@@ -152,9 +159,15 @@ def fire_timed_events():
     return nevents
 
 ############################## Begin main ##################################
-if len(sys.argv) != 2:
-    raise RuntimeError("usage: photogen.py upload-url")
+if len(sys.argv) != 8:
+    raise RuntimeError("usage: photogen.py upload-url LL_X LR_X UL_X UR_X TOP BOTTOM")
 UPLOAD_URL = sys.argv[1]
+GUIDELINE_LL_X = int(sys.argv[2])
+GUIDELINE_LR_X = int(sys.argv[3])
+GUIDELINE_UL_X = int(sys.argv[4])
+GUIDELINE_UR_X = int(sys.argv[5])
+GUIDELINE_TOP = int(sys.argv[6])
+GUIDELINE_BOTTOM = int(sys.argv[7])
 
 state_table = {}
 state_table['INIT-BEGIN'] = ['WARM_WAIT', wait_command_timeout]

@@ -190,6 +190,13 @@ if __name__ == "__main__":
     PORT = config.getint('RPI', 'PORT')
     TC = config.getfloat('CHASSIS', 'TC')
     UPLOAD_URL = config.get('RPI', 'UPLOAD_URL')
+    GUIDELINE_LL_X = config.get('RPI', 'GUIDELINE_LL_X')
+    GUIDELINE_LR_X = config.get('RPI', 'GUIDELINE_LR_X')
+    GUIDELINE_UL_X = config.get('RPI', 'GUIDELINE_UL_X')
+    GUIDELINE_UR_X = config.get('RPI', 'GUIDELINE_UR_X')
+    GUIDELINE_TOP = config.get('RPI', 'GUIDELINE_TOP')
+    GUIDELINE_BOTTOM = config.get('RPI', 'GUIDELINE_BOTTOM')
+
 
     TRIM = None
 
@@ -206,5 +213,5 @@ if __name__ == "__main__":
     enable()
 
     server = SocketServer.UDPServer((HOST, PORT), MyUDPHandler)
-    photogen_handle = subprocess.Popen(['./photogen.py', UPLOAD_URL], stdin=subprocess.PIPE)
+    photogen_handle = subprocess.Popen(['./photogen.py', UPLOAD_URL, GUIDELINE_LL_X, GUIDELINE_LR_X, GUIDELINE_UL_X, GUIDELINE_UR_X, GUIDELINE_TOP, GUIDELINE_BOTTOM], stdin=subprocess.PIPE)
     server.serve_forever()

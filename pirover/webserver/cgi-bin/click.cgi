@@ -5,67 +5,19 @@ import cgitb
 import socket
 import time
 import re
+import utils
 
 # Change these to match your configuration
 # Host is the IP address of the RPi
 # CUSTOMIZE: Replace with your RPI's IP address.
-HOST, PORT = "your.rpi.ip.addr", 9999
+PORT = 9999
 
 refresh_max = 30 # How many seconds are you allowed to auto-refresh
 
 def send_req(data, ipaddr):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     print "Sending request:" + data + " to " + ipaddr
-    sock.sendto(data, (HOST, PORT))
-
-cgitb.enable()
-print "Content-Type: text/html"     # HTML is following
-print """
-<style>
-  body {background-color:lightgrey}
-  h1   {color:blue}
-  p    { color:green; font-size:200% }
-  input {font-face:'Comic Sans MS';
-            font-size: larger;
-            color: teal;
-            background-color: #FFFFC0;
-            border: 3pt ridge lightgrey;
-        }
-    textarea {
-        font-size: larger
-    }
-
-</style>
-"""
-def print_html_form(trimval=0, duration=5, ipaddr="0.0.0.0"):
-    html = """
-<form method="post" action="click.cgi" enctype="multipart/form-data">
-    <p>
-        Trim: Left<input type="range" name="trim" value="{0}" min="-10" max="10"/>Right<br/>
-        <textarea rows="4" cols="10" name="txtcmds" placeholder="Rover Commands"></textarea> </br>
-        <input type="submit" name="click" value="Go"/>
-    </p>
-    <p>
-        Enter commands above or click buttons below: <br/>
-        Duration: 
-        <input type="text"
-            name="duration"
-            value="{1}"
-            size="10" maxlength="10" />
-    <br/>
-    <input type="submit" name="click" value="Left"/>
-    <input type="submit" name="click" value="Forward"/>
-    <input type="submit" name="click" value="Right"/>
-    <input type="submit" name="click" value="Back"/>
-    <br/>
-</p>
-    <input type="submit" name="click" value="Snap"/>
-    <input type="hidden" name="ipaddr" value="{2}"/>
-</form>
-
-<img src="image.cgi"></img>
-"""
-    print html.format(trimval, duration, ipaddr)
+    sock.sendto(data, (ipaddr, PORT))
 
 def process_text_commands(text, ipaddr):
     # All commands must follow the correct syntax and there cannot be more than
@@ -80,19 +32,16 @@ def process_text_commands(text, ipaddr):
 
     send_req(text.lower(), ipaddr)
 
-
-print                               # blank line, end of headers
-
-print "<TITLE>Pi Rover Control</TITLE>"
-
-print "<h1> Pi Rover Control</h1>"
+cgitb.enable()
+#print "Content-Type: text/html"     # HTML is following
+#print
 
 trimval = 0
 duration = 5
 ipaddr="Unknown"
 
 form = cgi.FieldStorage()
-if ("click" not in form) or ("ipaddr" not in form):
+if "ipaddr" not in form:
     print "<H1>Error</H1>"
     print "Invalid Input"
 else:
@@ -103,27 +52,28 @@ else:
         trimval = int(trimstr)
         if trimval >= -10 and trimval <= 10:
             cmdstr = "T" + trimstr
-    cmd = form["click"].value
-    if cmd == "Go":
-        process_text_commands(form["txtcmds"].value, ipaddr)
-    else:
-        if "duration" in form:
-            duration = form["duration"].value
-        if not duration:
-            duration = "5"
-        if cmd == "Right":
-            cmdstr = cmdstr + " r" + duration
-        elif cmd == "Left":
-            cmdstr = cmdstr + " l" + duration
-        elif cmd == "Forward":
-            cmdstr = cmdstr + " f" + duration
-        elif cmd == "Snap":
-            cmdstr = cmdstr + " s" + duration
-        elif cmd == "Back":
-            cmdstr = cmdstr + " b" + duration
+    if "click" in form:
+        cmd = form["click"].value
+        if cmd == "Go":
+            process_text_commands(form["txtcmds"].value, ipaddr)
+        else:
+            if "duration" in form:
+                duration = form["duration"].value
+            if not duration:
+                duration = "5"
+            if cmd == "Right":
+                cmdstr = cmdstr + " r" + duration
+            elif cmd == "Left":
+                cmdstr = cmdstr + " l" + duration
+            elif cmd == "Forward":
+                cmdstr = cmdstr + " f" + duration
+            elif cmd == "Snap":
+                cmdstr = cmdstr + " s" + duration
+            elif cmd == "Back":
+                cmdstr = cmdstr + " b" + duration
 
-        send_req(cmdstr, ipaddr)
+            send_req(cmdstr, ipaddr)
 
-print_html_form(trimval=trimval, duration=duration, ipaddr=ipaddr)
+utils.print_html_header()
+utils.print_html_form(trimval=trimval, duration=duration, ipaddr=ipaddr)
 
-print "</body></html>"

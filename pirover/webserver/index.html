@@ -27,33 +27,17 @@
 </head>
 <body>
 
-<H1>Pi Rover Control</H1>
+<H1>Pi Rover Control Login</H1>
 
 <form method="post" action="cgi-bin/click.cgi" enctype="multipart/form-data">
-    <p>
-        Trim: Left<input type="range" name="trim" value="0" min="-10" max="10"/>Right<br/>
-        <textarea rows="4" cols="10" name="txtcmds" placeholder="Rover Commands"></textarea> <br/>
-        <input type="submit" name="click" value="Go"/>
+    IP Address:
+    <input type="text"
+            name="ipaddr"
+            value="127.0.0.1" 
+            size="10" maxlength="30" />
     </p>
-    <p>
-        Enter commands above or click buttons below: <br/>
-        Duration: 
-        <input type="text"
-            name="duration"
-            value="5" 
-            size="10" maxlength="10" />
-    <br/>
-    <input type="submit" name="click" value="Left"/>
-    <input type="submit" name="click" value="Forward"/>
-    <input type="submit" name="click" value="Right"/>
-    <input type="submit" name="click" value="Back"/>
-    <br/>
-</p>
-    <input type="submit" name="click" value="Snap"/>
-    <input type="hidden" name="ipaddr" value="127.0.0.1"/>
+    <input type="submit" name="go" value="Go"/>
 </form>
-
-<img src="cgi-bin/image.cgi"></img>
 
 </body>
 </html>

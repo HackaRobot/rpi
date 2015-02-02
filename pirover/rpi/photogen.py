@@ -180,6 +180,7 @@ state_table['UPLOADING-COMPLETE'] = ['CAPTURING', capture]
 state_table['UPLOADING-PAUSE'] = ['FINAL_CAPTURE', final_capture]
 state_table['FINAL_CAPTURE-COMPLETE'] = ['FINAL_UPLOAD', upload_text]
 state_table['FINAL_CAPTURE-PAUSE'] = ['FINAL_UPLOAD', upload_text]
+state_table['FINAL_CAPTURE-START'] = ['FINAL_UPLOAD', upload_text]
 state_table['FINAL_UPLOAD-COMPLETE'] = ['WARM_WAIT', wait_command_timeout]
 state_table['COLD_WAIT-START'] = ['CAPTURING', capture]
 

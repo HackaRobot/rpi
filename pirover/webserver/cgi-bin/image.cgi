@@ -33,14 +33,19 @@ if "duration" in form:
 endtime = time.time() + duration
 filename = "image.jpg"
 mtime = 0
+xmittime = 0
 while time.time() < endtime:
     try:
+        elapsed = time.time() - xmittime
         newtime = os.lstat(filename).st_mtime
-        #sys.stderr.write("newtime={0}\n".format(newtime))
-        if newtime == mtime:
-            #sys.stderr.write("newtime == mtime. Sleeping..\n")
+        #sys.stderr.write("newtime={0} elapsed={1}\n".format(newtime, elapsed))
+        # Send a pic every 5 seconds, no matter what
+        if newtime == mtime and (elapsed < 5):
+            sys.stderr.write("newtime == mtime. Sleeping..\n")
             time.sleep(1)
             continue
+
+        sys.stderr.write("Xmitting..\n")
         mtime = newtime
 
         # Send boundary
@@ -58,6 +63,7 @@ while time.time() < endtime:
             sys.stdout.write(chunk)
             pass
 
+        xmittime = time.time()
         #sys.stderr.write("Flusing....\n")
         sys.stdout.flush()
     except RuntimeError:

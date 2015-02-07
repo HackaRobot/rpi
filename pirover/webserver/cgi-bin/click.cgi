@@ -1,4 +1,4 @@
-#! /usr/pkg/bin/python
+#! /usr/bin/env python
 
 import cgi
 import cgitb

@@ -1,4 +1,4 @@
-#! /usr/pkg/bin/python
+#! /usr/bin/env python
 # This CGI script receives an image file and saves it as image.png
 
 import cgi

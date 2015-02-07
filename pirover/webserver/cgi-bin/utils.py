@@ -22,7 +22,7 @@ def print_html_header():
 """
 
 ################################################################################
-def print_html_form(trimval=0, duration=5, ipaddr="0.0.0.0"):
+def print_html_form(trimval=0, duration=5, ipaddr="0.0.0.0", streamtime=25):
     html = """
 <form method="post" action="click.cgi" enctype="multipart/form-data">
     <p>
@@ -48,11 +48,11 @@ def print_html_form(trimval=0, duration=5, ipaddr="0.0.0.0"):
     <input type="hidden" name="ipaddr" value="{2}"/>
 </form>
 
-<img src="image.cgi"></img>
+<img src="image.cgi?duration={3}"></img>
     </body>
 </html>
 """
-    print html.format(trimval, duration, ipaddr)
+    print html.format(trimval, duration, ipaddr, streamtime)
 
 
 

@@ -21,6 +21,8 @@ def send_response(code):
 # Response headers (multipart)
 for k, v in pymjpeg.request_headers().items():
     send_header(k, v)
+end_headers()
+print(pymjpeg.boundary)
 
 # Multipart content
 duration = 20
@@ -45,23 +47,20 @@ while time.time() < endtime:
             time.sleep(1)
             continue
 
-        sys.stderr.write("Xmitting..\n")
+        #sys.stderr.write("Xmitting..\n")
         mtime = newtime
 
-        # Send boundary
-        end_headers()
-        print(pymjpeg.boundary)
-        end_headers()
-
-        # Send headers
+        # Send per-image headers
         for k, v in pymjpeg.image_headers(filename).items():
             send_header(k, v)
         end_headers()
 
-        # Part binary
+        # Send image  binary
         for chunk in pymjpeg.image(filename):
             sys.stdout.write(chunk)
-            pass
+
+        # Send boundary after image
+        print(pymjpeg.boundary)
 
         xmittime = time.time()
         #sys.stderr.write("Flusing....\n")

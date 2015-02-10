@@ -43,7 +43,7 @@ while time.time() < endtime:
         #sys.stderr.write("newtime={0} elapsed={1}\n".format(newtime, elapsed))
         # Send a pic every 5 seconds, no matter what
         if newtime == mtime and (elapsed < 5):
-            sys.stderr.write("newtime == mtime. Sleeping..\n")
+            #sys.stderr.write("newtime == mtime. Sleeping..\n")
             time.sleep(1)
             continue
 
